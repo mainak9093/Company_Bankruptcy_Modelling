@@ -1,4 +1,3 @@
-# Company_Bankruptcy_Modelling
 # Company Bankruptcy Prediction
 
 ## Overview
