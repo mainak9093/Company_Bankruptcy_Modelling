@@ -1,0 +1,17 @@
+{
+  "confusion_matrix": [
+    [
+      632,
+      1
+    ],
+    [
+      6,
+      0
+    ]
+  ],
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "roc_auc": 0.7285,
+  "classification_report": "              precision    recall  f1-score   support\n\n           0       0.99      1.00      0.99       633\n           1       0.00      0.00      0.00         6\n\n    accuracy                           0.99       639\n   macro avg       0.50      0.50      0.50       639\nweighted avg       0.98      0.99      0.99       639\n"
+}
