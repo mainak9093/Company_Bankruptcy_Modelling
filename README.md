@@ -88,6 +88,7 @@ Despite the extreme class imbalance (about 1:25), the hybrid model demonstrates 
 | df_not_bankrupted.csv | Data Frame for not bankrupted                                |
 |Labels.xlsx | Labels which are marked as attributes|
 |Overview.pdf| Overview of this project|
+|Report.pdf|Report for academic purposes.|
 
 ---
 
