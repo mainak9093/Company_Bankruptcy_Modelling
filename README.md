@@ -111,6 +111,6 @@ The hybrid DNN + GNB ensemble effectively predicts company bankruptcy on highly 
 ## Credits
 
 
-Mainak Sarkar
-CH Rishita
+- Mainak Sarkar
+- CH Rishita
 ---
