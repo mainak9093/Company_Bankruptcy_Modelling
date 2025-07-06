@@ -108,3 +108,9 @@ Despite the extreme class imbalance (about 1:25), the hybrid model demonstrates 
 The hybrid DNN + GNB ensemble effectively predicts company bankruptcy on highly imbalanced financial data. The model balances precision and recall, making it suitable for practical risk assessment. Future work may involve advanced ensemble techniques or additional domain-specific features for further improvement.
 
 ---
+## Credits
+
+
+Mainak Sarkar
+CH Rishita
+---
