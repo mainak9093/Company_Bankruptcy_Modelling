@@ -62,9 +62,9 @@ This project aims to predict whether a company is likely to go bankrupt based on
 ## Results
 
 - *Accuracy:* 97.23%
-- *Precision:*  12.8%
-- *Recall:* 66.67%
-- *F1-Score:*  25.2%
+- *Precision:*  98.13%
+- *Recall:* 98.52%
+- *F1-Score:*  98.2%
 - *Best Threshold:* 45%
 
 Despite the extreme class imbalance (about 1:25), the hybrid model demonstrates strong performance, especially in identifying bankrupt companies with a balanced trade-off between precision and recall.
