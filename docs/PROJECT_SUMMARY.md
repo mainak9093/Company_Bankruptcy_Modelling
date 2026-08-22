@@ -1,5 +1,14 @@
 # PROJECT SUMMARY: Company Bankruptcy Prediction
 
+> **SUPERSEDED — August 2025.**
+> The metrics and several structural details in this document are from the
+> original release and are **not reproducible**. `src/train.py` crashed before
+> producing any of them, and the figures trace back to an experiment on a
+> different dataset. See `docs/RESULTS.md` for verified numbers and
+> `docs/BUGS.md` for what was wrong. The design description below is still
+> broadly accurate; the numbers are not.
+
+
 ## Executive Summary
 
 This project implements a state-of-the-art machine learning system for predicting company bankruptcy using financial indicators. The ensemble approach combining Deep Neural Networks and Gaussian Naive Bayes achieves **97.23% accuracy** with **51.52% F1-score** on imbalanced data, demonstrating strong performance even with the challenging 33:1 class ratio.

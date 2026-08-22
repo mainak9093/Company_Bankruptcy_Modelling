@@ -1,130 +1,104 @@
-# Quick Start Guide
+# Quick Start
 
-Get up and running with the Company Bankruptcy Prediction model in 5 minutes.
-
-## 1. Installation (2 minutes)
+## 1. Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/mainak9093/Company_Bankruptcy_Modelling.git
-cd Company_Bankruptcy_Modelling
-
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+venv\Scripts\activate          # Windows;  source venv/bin/activate on Linux/macOS
 pip install -r requirements.txt
 ```
 
-## 2. Train the Model (3 minutes)
+Python 3.9–3.13. TensorFlow CPU is sufficient; no GPU needed (training takes
+under a minute).
 
-```bash
-cd src
-python train.py
-```
+## 2. Train
 
-The training script will:
-- Automatically load and preprocess the data
-- Train ensemble DNN + GaussianNB models
-- Save trained models to `models/saved/`
+Run from the **project root** — not from inside `src/`.
 
-Expected results:
-- **F1-Score**: ~51.52%
-- **Precision**: ~48.57%
-- **Recall**: ~54.84%
-
-## 3. Make Predictions
-
-### On Sample Data
-
-```bash
-cd src
-python predict.py ../data/raw/sample.csv ../results/predictions.csv
-cat ../results/predictions.csv
-```
-
-### On Your Data
-
-Prepare a CSV file with the same financial indicator columns as the training data, then:
-
-```bash
-python predict.py path/to/your/data.csv path/to/output/predictions.csv
-```
-
-Output includes:
-- Bankruptcy probabilities from each model
-- Final ensemble prediction
-- Risk level assessment
-
-## 4. Explore Results
-
-### View Processed Data
-
-```python
-import pandas as pd
-df = pd.read_csv('data/processed/processed_data.csv')
-print(f"Shape: {df.shape}")
-print(f"Columns: {df.columns.tolist()[:5]}...")  # First 5 columns
-```
-
-### Check Selected Features
-
-```python
-features = pd.read_csv('data/processed/selected_features.csv')
-print(f"Selected {len(features)} features:")
-print(features.head(10))
-```
-
-## Common Issues
-
-### Issue: Module not found errors
-**Solution**: Make sure you're in the `src/` directory when running scripts, or run from project root:
 ```bash
 python src/train.py
+```
+
+Takes ~1 minute on CPU. Writes:
+
+* `models/saved/` — `cleaner.pkl`, `scaler.pkl`, `gnb_model.pkl`,
+  `dnn_model.keras`, `threshold.json`
+* `data/processed/` — `selected_features.csv`, `anova_feature_scores.csv`
+* `results/holdout_results.{csv,json}`
+
+Expected final block:
+
+```
+        model  threshold  accuracy  precision  recall  f1_score  roc_auc  pr_auc
+          gnb     0.9900    0.9505     0.3284  0.7097    0.4490   0.9509  0.3162
+          dnn     0.9100    0.9569     0.3710  0.7419    0.4946   0.9315  0.4587
+     ensemble     0.9100    0.9588     0.3750  0.6774    0.4828   0.9595  0.4605
+ensemble@0.50     0.5000    0.9212     0.2430  0.8387    0.3768   0.9595  0.4605
+```
+
+These numbers are deterministic — you should get them exactly.
+
+## 3. Get the numbers to quote
+
+```bash
+python src/cross_validate.py
+```
+
+Takes ~4 minutes (5 folds). This is the result to put in a report:
+
+```
+ensemble:
+  accuracy            0.9604 +/- 0.0078
+  precision           0.3622 +/- 0.0810
+  recall              0.4606 +/- 0.0983
+  f1_score            0.3971 +/- 0.0576
+  roc_auc             0.9084 +/- 0.0358
+  pr_auc              0.3574 +/- 0.0471
+```
+
+## 4. Compare against baselines
+
+```bash
+python src/baselines.py
+```
+
+## 5. Predict on new data
+
+```bash
 python src/predict.py data/raw/sample.csv results/predictions.csv
 ```
 
-### Issue: TensorFlow errors
-**Solution**: Install specific compatible version:
+The input CSV needs the same raw feature columns as `Train.csv`. A `Bankrupt?`
+column is optional and ignored for prediction. Output columns:
+`DNN_Probability`, `GNB_Probability`, `Ensemble_Probability`, `Prediction`,
+`Bankruptcy_Risk`.
+
+To score **labelled** data instead:
+
 ```bash
-pip install tensorflow==2.10.0
+python src/evaluate.py path/to/labelled.csv
 ```
 
-### Issue: Data not found
-**Solution**: Ensure Train.csv is in `data/raw/` directory. Download from the original dataset if missing.
+## 6. Tests
 
-## Next Steps
-
-- Read the full [README.md](README.md) for detailed documentation
-- Check [CONTRIBUTING.md](CONTRIBUTING.md) to contribute improvements
-- Review papers in `docs/reports/` for technical details
-- Modify `src/config.py` to experiment with different hyperparameters
-
-## Quick Python API Usage
-
-```python
-import sys
-sys.path.insert(0, 'src')
-from predict import predict, load_models_and_scaler
-import pandas as pd
-
-# Load models
-dnn_model, gnb_model, scaler = load_models_and_scaler()
-
-# Make predictions on your data
-data = pd.read_csv('your_data.csv')
-predictions = predict('your_data.csv')
-
-print(predictions)
+```bash
+pytest tests/ -v      # 18 tests, ~2 s
 ```
 
-## Need Help?
+## Troubleshooting
 
-- Check existing [GitHub Issues](https://github.com/mainak9093/Company_Bankruptcy_Modelling/issues)
-- Create a new issue with details about your problem
-- Review the code comments in `src/` modules
+| Symptom | Cause | Fix |
+|---|---|---|
+| `ModuleNotFoundError: config` | Running from inside `src/` | Run from the project root: `python src/train.py` |
+| `ModuleNotFoundError: tensorflow` | Not installed | `pip install tensorflow-cpu` |
+| `ModuleNotFoundError: imblearn` | Not installed | `pip install imbalanced-learn` |
+| `FileNotFoundError: Missing artifacts` from `predict.py` | `train.py` has not been run | `python src/train.py` first |
+| `KeyError: 'Bankrupt?'` | Input CSV has different column names | Column names are stripped on load; check the file really is the Taiwan dataset |
+| Numbers differ from those above | Different library versions | Metrics are seeded and deterministic per environment; see README for verified versions |
 
----
+## What to read next
 
-**Happy predicting!** 🚀
+* [`RESULTS.md`](RESULTS.md) — every verified number, with the corrections to
+  the old report.
+* [`BUGS.md`](BUGS.md) — the 24 bugs that were found and fixed.
+* [`ARCHITECTURE.md`](ARCHITECTURE.md) — module-by-module design.

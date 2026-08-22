@@ -92,6 +92,8 @@ dmypy.json
 data/raw/Train.csv
 data/raw/sample.csv
 data/processed/
+!data/processed/selected_features.csv
+!data/processed/anova_feature_scores.csv
 models/saved/
 *.pkl
 *.h5
@@ -102,4 +104,14 @@ Thumbs.db
 
 # Project specific
 *.log
-results/
+
+# Generated metrics ARE tracked: they are the numbers quoted in docs/RESULTS.md
+# and the report, so they must be versioned alongside them.
+!results/
+!results/*.csv
+!results/*.json
+results/predictions.csv
+
+# Local working copy of the pre-rebuild src/. Redundant with git history
+# (see the README), so it is deliberately not tracked.
+src_original_backup/

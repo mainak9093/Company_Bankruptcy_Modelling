@@ -1,15 +1,18 @@
-# Core dependencies
+# Core dependencies (required)
 pandas>=1.3.0
 numpy>=1.19.0
 scikit-learn>=1.0.0
 imbalanced-learn>=0.8.0
-tensorflow>=2.8.0
+tensorflow>=2.8.0        # tensorflow-cpu is sufficient; no GPU needed
+
+# Testing
+pytest>=6.0
 
 # Visualization (optional)
 matplotlib>=3.4.0
 seaborn>=0.11.0
 
-# Additional ML libraries (optional for extended experiments)
-catboost>=1.0.0
-xgboost>=1.5.0
-lightgbm>=3.3.0
+# Only needed to re-run the legacy notebooks in notebooks/ (different dataset)
+# catboost>=1.0.0
+# xgboost>=1.5.0
+# lightgbm>=3.3.0

@@ -1,327 +1,266 @@
-# Company Bankruptcy Prediction
-
-A machine learning project for predicting company bankruptcy using financial indicators and ensemble deep learning techniques.
-
-## Overview
-
-This project develops a hybrid ensemble model combining Deep Neural Networks (DNN) and Gaussian Naive Bayes (GNB) classifiers to predict bankruptcy risk based on 95 financial indicators from the company financial dataset. The model addresses the significant class imbalance (97.2% non-bankrupt vs 2.8% bankrupt) through data preprocessing, feature selection, and SMOTE oversampling.
-
-### Key Features
-
-- **Ensemble Approach**: Combines DNN and GaussianNB for robust predictions
-- **Class Imbalance Handling**: SMOTE-based oversampling for minority class
-- **Feature Selection**: ANOVA F-test for selecting top 30 discriminative features
-- **Data Quality**: Robust preprocessing handling data errors and correlations
-- **Production Ready**: Clean modular code structure with proper configuration management
-- **High Performance**: 97.23% accuracy with 51.52% F1-score on imbalanced test set
-
-## Results
-
-| Metric | Value |
-|--------|-------|
-| **Accuracy** | 97.23% |
-| **Precision** | 48.57% |
-| **Recall** | 54.84% |
-| **F1-Score** | 51.52% |
-| **ROC-AUC** | 0.9239 |
-| **Optimal Threshold** | 0.50 |
-
-### Dataset Details
-
-- **Size**: 5,455 samples × 96 financial indicators
-- **Target**: Binary classification (Bankrupt? 0/1)
-- **Class Distribution**:
-  - Non-bankrupt: 5,301 (97.2%)
-  - Bankrupt: 154 (2.8%)
-- **Data Quality**: Zero null values, zero duplicates after preprocessing
-
-## Project Structure
-
-```
-.
-├── src/                          # Source code modules
-│   ├── __init__.py
-│   ├── config.py                # Configuration parameters
-│   ├── data_preprocessing.py     # Data cleaning and preprocessing
-│   ├── feature_selection.py      # Feature selection utilities
-│   ├── model_training.py         # Model training functions
-│   ├── model_evaluation.py       # Evaluation metrics
-│   ├── train.py                  # Main training pipeline
-│   └── predict.py                # Inference on new data
-├── data/
-│   ├── raw/                      # Original dataset
-│   │   ├── Train.csv
-│   │   └── sample.csv
-│   └── processed/                # Processed data and features
-├── models/
-│   └── saved/                    # Trained model artifacts
-│       ├── dnn_model.h5
-│       ├── GaussianNB_model.pkl
-│       └── scaler.pkl
-├── docs/
-│   └── reports/                  # Research papers and reports
-├── notebooks/                    # Jupyter notebooks (legacy)
-├── tests/                        # Unit tests
-├── setup.py                      # Package setup configuration
-├── requirements.txt              # Python dependencies
-├── .gitignore                    # Git ignore rules
-└── README.md                     # This file
-```
-
-## Technical Approach
-
-### 1. Data Preprocessing
-- **Error Handling**: Removed 9 columns with >300 data errors (values >2)
-- **Imputation**: Capped and filled 14 columns with low errors using median
-- **Feature Dropping**: Removed 32 highly correlated features (>0.90 correlation)
-- **Result**: Reduced from 96 to 63 features
-
-### 2. Feature Selection
-- **Method**: ANOVA F-test (SelectKBest)
-- **Selected**: Top 30 features with highest discriminative power
-- **Rationale**: Reduces dimensionality while retaining predictive signals
-
-### 3. Class Imbalance Handling
-- **Technique**: SMOTE (Synthetic Minority Over-sampling Technique)
-- **Effect**: Balanced training set (4,241 samples per class after oversampling)
-- **Benefits**: Prevents model bias toward majority class
-
-### 4. Model Architecture
-
-#### Deep Neural Network (DNN)
-```
-Input Layer: 30 features
-    ↓
-Dense(256) + ReLU + BatchNorm + Dropout(0.5)
-    ↓
-Dense(128) + ReLU + BatchNorm + Dropout(0.5)
-    ↓
-Dense(64) + ReLU + BatchNorm + Dropout(0.4)
-    ↓
-Output: Dense(1) + Sigmoid
-```
-- **Optimizer**: Adam (lr=0.0005)
-- **Loss**: Binary Crossentropy
-- **Regularization**: Batch Normalization + Dropout
-
-#### Gaussian Naive Bayes
-- **Assumption**: Feature independence given class
-- **Advantage**: Probabilistic and interpretable
-- **Speed**: Fast inference
-
-#### Ensemble Strategy
-- **Method**: Soft voting (average probabilities)
-- **DNN Probability** + **GNB Probability** / 2
-- **Threshold**: 0.50 (optimized for F1-score)
-
-## Installation
-
-### Prerequisites
-- Python 3.8 or higher
-- pip or conda
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/mainak9093/Company_Bankruptcy_Modelling.git
-   cd Company_Bankruptcy_Modelling
-   ```
-
-2. **Create virtual environment** (recommended)
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Optional: Install as package**
-   ```bash
-   pip install -e .
-   ```
-
-## Usage
-
-### Training the Model
-
-Run the complete training pipeline:
-
-```bash
-cd src
-python train.py
-```
-
-This will:
-1. Load and preprocess the training data
-2. Select top 30 features using ANOVA
-3. Apply SMOTE oversampling
-4. Train DNN and GaussianNB models
-5. Find optimal prediction threshold
-6. Evaluate ensemble performance
-7. Save models to `models/saved/`
-
-**Expected output**:
-```
-============================================================
-Company Bankruptcy Prediction - Training Pipeline
-============================================================
-
-[1/6] Loading data...
-[2/6] Preprocessing data...
-[3/6] Selecting features...
-...
-[6/6] Training models...
-...
-Ensemble (DNN + GaussianNB) Evaluation Results
-Precision: 0.4857
-Recall: 0.5484
-F1-Score: 0.5152
-ROC-AUC: 0.9239
-```
-
-### Making Predictions
-
-Use the trained model to predict bankruptcy on new data:
-
-```bash
-cd src
-python predict.py ../data/raw/sample.csv ../results/predictions.csv
-```
-
-**Input CSV format**: Should have the same financial indicator columns as training data
-
-**Output CSV**: Contains:
-- `DNN_Probability`: Probability from DNN
-- `GNB_Probability`: Probability from GaussianNB
-- `Ensemble_Probability`: Average probability
-- `Prediction`: Binary prediction (0=Non-bankrupt, 1=Bankrupt)
-- `Bankruptcy_Risk`: Risk level (Low/High)
-
-**Example usage in Python**:
-
-```python
-import sys
-sys.path.insert(0, 'src')
-from predict import predict
-
-results = predict('data/raw/sample.csv', 'results/predictions.csv')
-print(results.head())
-```
-
-## Model Configuration
-
-Edit `src/config.py` to modify:
-
-```python
-# Model hyperparameters
-TOP_FEATURES = 30                    # Number of features to select
-DNN_EPOCHS = 200                     # Training epochs
-DNN_BATCH_SIZE = 64                  # Batch size
-DNN_LEARNING_RATE = 0.0005          # Learning rate
-ENSEMBLE_THRESHOLD = 0.50            # Decision threshold
-```
-
-## Experiments Explored
-
-The project experimented with multiple approaches:
-
-### 1. Random Forest + CatBoost
-- **F1-Score**: 31.82%
-- **Insights**: Good baseline, but lower recall
-
-### 2. XGBoost + LightGBM + DNN Ensemble
-- **F1-Score**: 41.46%
-- **Insights**: Improved but still lower than final approach
-
-### 3. ANOVA + DNN + GaussianNB (Final)
-- **F1-Score**: 51.52%
-- **Insights**: Best balanced performance, better recall for minority class
-
-## Handling Class Imbalance
-
-The 33:1 imbalance ratio (5301:154) is addressed through:
-
-1. **SMOTE Oversampling**: Creates synthetic minority examples
-2. **Class Weights**: Applied during DNN training (weight_minority ≈ 1.0 after SMOTE)
-3. **Threshold Tuning**: Optimized threshold specifically for F1-score
-4. **Balanced Metrics**: Reports precision, recall, and F1-score (not just accuracy)
-
-## Files and Artifacts
-
-### Data Files
-- `data/raw/Train.csv`: Original training dataset (5455 × 96)
-- `data/raw/sample.csv`: Example data for predictions
-- `data/processed/processed_data.csv`: Cleaned dataset after preprocessing
-
-### Model Artifacts
-- `models/saved/dnn_model.h5`: Trained DNN (TensorFlow format)
-- `models/saved/GaussianNB_model.pkl`: Trained GaussianNB (pickle format)
-- `models/saved/scaler.pkl`: StandardScaler for feature normalization
-
-### Documentation
-- `docs/reports/Company-Bankruptcy-Prediction.pdf`: Project report
-- `docs/reports/Report_IEEE.pdf`: IEEE-format technical paper
-
-## Future Improvements
-
-1. **Data**: Incorporate temporal features (time-series financial indicators)
-2. **Features**: Add domain-specific financial ratios
-3. **Models**: Try stacking or blending with gradient boosting models
-4. **Deployment**: Create REST API for production inference
-5. **Interpretability**: Add SHAP values for model explainability
-6. **Monitoring**: Set up performance tracking for concept drift
-
-## Testing
-
-Run unit tests:
-
-```bash
-pytest tests/
-```
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/improvement`)
-3. Commit changes (`git commit -am 'Add improvement'`)
-4. Push to branch (`git push origin feature/improvement`)
-5. Submit a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Citation
-
-If you use this project in your research, please cite:
-
-```bibtex
-@project{bankruptcy_prediction_2025,
-  title={Company Bankruptcy Prediction using Ensemble Deep Learning},
-  author={Mainak},
-  year={2025},
-  url={https://github.com/mainak9093/Company_Bankruptcy_Modelling}
-}
-```
-
-## References
-
-- Scikit-learn: [Imbalanced-learn SMOTE](https://imbalanced-learn.org/stable/references/generated/imblearn.over_sampling.SMOTE.html)
-- TensorFlow/Keras: [Deep Learning for Binary Classification](https://www.tensorflow.org/tutorials/structured_data/imbalanced_data)
-- Financial Indicators: Standard financial ratios used in bankruptcy prediction literature
-
-## Contact
-
-For questions or feedback:
-- GitHub: [@mainak9093](https://github.com/mainak9093)
-- Email: (Add your email)
+# Company Bankruptcy Prediction (EE708)
+
+Predicting company bankruptcy from financial ratios with a DNN + Gaussian Naive
+Bayes soft-voting ensemble, on a dataset with a 34:1 class imbalance.
+
+> **Rebuilt May 2025 → August 2025.** The previous version of this repository
+> could not run — `src/train.py` crashed in preprocessing — and the metrics in
+> the README and the PDF report came from an experiment on a *different
+> dataset*. Everything below is produced by the code in `src/`, is
+> leak-free, and is reproducible from a fixed seed.
+> See [`docs/BUGS.md`](docs/BUGS.md) for the 24 issues found and fixed,
+> [`docs/RESULTS.md`](docs/RESULTS.md) for the verified numbers, and
+> [`docs/reports/ERRATA.md`](docs/reports/ERRATA.md) for every wrong figure in
+> the original report and slide deck next to its true value. The corrected
+> report is [`docs/reports/EE708_report_corrected.pdf`](docs/reports/EE708_report_corrected.pdf).
 
 ---
 
-**Last Updated**: May 2025  
-**Status**: Production Ready ✓
+## Results
+
+**Headline (5-fold stratified cross-validation, mean ± std):**
+
+| Metric | Ensemble (DNN + GNB) |
+|---|---|
+| ROC-AUC | **0.908 ± 0.036** |
+| PR-AUC | **0.357 ± 0.047** |
+| F1-Score | **0.397 ± 0.058** |
+| Precision | 0.362 ± 0.081 |
+| Recall | 0.461 ± 0.098 |
+| Accuracy | 0.960 ± 0.008 |
+| Balanced accuracy | 0.718 ± 0.047 |
+
+**Single 80/20 hold-out** (1,091 test rows, 31 bankrupt; threshold 0.91 tuned on
+a separate validation split):
+
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
+|---|---|---|---|---|---|---|
+| GaussianNB | 0.9505 | 0.3284 | 0.7097 | 0.4490 | 0.9509 | 0.3162 |
+| DNN | 0.9569 | 0.3710 | 0.7419 | 0.4946 | 0.9315 | 0.4587 |
+| **Ensemble** | **0.9588** | **0.3750** | 0.6774 | **0.4828** | **0.9595** | **0.4605** |
+
+Confusion matrix: `[[1025, 35], [10, 21]]` — 21 of 31 bankruptcies caught at
+35 false alarms.
+
+> **On accuracy:** predicting "never bankrupt" scores 97.2% on this dataset.
+> Accuracy is reported for completeness only; **PR-AUC and F1 are the
+> meaningful metrics** at a 2.8% positive rate.
+
+Full tables, baselines and per-fold spread: [`docs/RESULTS.md`](docs/RESULTS.md).
+
+## Dataset
+
+`data/raw/Train.csv` — Taiwan Economic Journal company financials.
+
+| Property | Value |
+|---|---|
+| Rows | 5,455 |
+| Columns | 96 (95 features + `Bankrupt?`) |
+| Bankrupt | 154 (2.82%) |
+| Non-bankrupt | 5,301 (97.18%) |
+| Imbalance | 34.4 : 1 |
+| Nulls / duplicates | 0 / 0 |
+
+Note: every feature column name in the CSV has a **leading space**
+(`" ROA(C) before interest..."`). `load_data()` strips them — this was the cause
+of the original crash.
+
+## Quick start
+
+```bash
+python -m venv venv
+venv\Scripts\activate          # Windows;  source venv/bin/activate on Linux/macOS
+pip install -r requirements.txt
+
+python src/train.py            # train + evaluate + save artifacts  (~1 min CPU)
+```
+
+Run every script from the **project root**, not from `src/`.
+
+## The scripts, and the order to run them
+
+| # | Script | What it does | Needs | Writes |
+|---|---|---|---|---|
+| 1 | `src/train.py` | Trains on an 80/20 stratified hold-out, tunes the threshold on a validation split, evaluates once on test, saves all artifacts. | `data/raw/Train.csv` | `models/saved/*`, `data/processed/*`, `results/holdout_results.{csv,json}` |
+| 2 | `src/cross_validate.py` | Re-runs the whole pipeline across 5 stratified folds. **These are the numbers to quote.** | `data/raw/Train.csv` | `results/cv_summary.{csv,json}`, `results/cv_per_fold.csv` |
+| 3 | `src/baselines.py` | LogReg / GNB / Decision Tree / Random Forest / HistGradientBoosting under the identical protocol. | `data/raw/Train.csv` | `results/baseline_results.{csv,json}` |
+| 4 | `src/predict.py` | Scores an unlabelled CSV with the saved artifacts. | step 1 | `results/predictions.csv` |
+| 5 | `src/evaluate.py` | Scores a **labelled** CSV with the saved artifacts. | step 1 | stdout |
+| 6 | `src/make_report_figures.py` | Regenerates every figure in the LaTeX report from the same pipeline that produces the metrics. | `data/raw/Train.csv` | `docs/reports/src/figures/` |
+
+Steps 1–3 are independent of each other and can run in any order. Steps 4 and 5
+require step 1 to have run first.
+
+```bash
+# Reproduce everything, in order
+python src/train.py
+python src/cross_validate.py
+python src/baselines.py
+
+# Then use the trained model
+python src/predict.py data/raw/sample.csv results/predictions.csv
+python src/evaluate.py path/to/labelled_test.csv
+
+# Tests
+pytest tests/ -v
+```
+
+Supporting modules (imported, not run directly): `config.py` (all settings and
+paths), `data_preprocessing.py`, `feature_selection.py`, `model_training.py`,
+`model_evaluation.py`, `pipeline.py` (the shared leak-free pipeline).
+
+## Method
+
+### Pipeline order
+
+The ordering is the part the original code got wrong. Nothing below the split
+may see the test set:
+
+```
+1. split off the test set              (stratified, 20%)
+2. split a validation set off the rest (stratified, 20% — real class ratio, NO SMOTE)
+3. fit the cleaner        on train only  → error columns, medians, correlations
+4. fit ANOVA selection    on train only  → top 30 features
+5. fit the StandardScaler on train only
+6. SMOTE the SCALED training split only
+7. train DNN (early-stop on val PR-AUC) + GaussianNB
+8. tune the decision threshold on val
+9. evaluate once on test
+```
+
+### Preprocessing
+
+| Step | Removed | Remaining |
+|---|---|---|
+| Start | — | 95 |
+| Constant columns (`Net Income Flag`) | 1 | 94 |
+| Data-error columns (>300 rows above 2.0) | 8 | 86 |
+| Correlated pairs (\|r\| > 0.90) | 21 | 65 |
+| ANOVA top-30 | 35 | **30** |
+
+15 more columns had 1–300 out-of-range cells; those cells are capped and filled
+with the training-split median rather than dropping the column.
+
+### Class imbalance
+
+SMOTE on the scaled training split only: 3,491 rows → 6,786 (3,393 per class).
+Validation and test keep the real 2.8% positive rate.
+
+Class weights are **not** used — after SMOTE the classes are already balanced,
+so inverse-frequency weights evaluate to `{0: 1, 1: 1.0}` and do nothing.
+
+### Model
+
+```
+Input(30)
+  → Dense(256) + ReLU + BatchNorm + Dropout(0.5)
+  → Dense(128) + ReLU + BatchNorm + Dropout(0.5)
+  → Dense(64)  + ReLU + BatchNorm + Dropout(0.4)
+  → Dense(1)   + Sigmoid
+```
+
+Adam (lr 5e-4), binary cross-entropy, batch 64, up to 200 epochs with
+**early stopping on validation PR-AUC** (patience 20, best weights restored).
+
+Ensemble: soft voting, `(P_dnn + P_gnb) / 2`.
+
+Early stopping is not cosmetic — training the same network for a fixed 200
+epochs, as the original did, drops test ROC-AUC from 0.932 to **0.816**.
+
+### Decision threshold
+
+Tuned on the validation split over 0.01–0.99, never on the test set. Because the
+models are trained on SMOTE-balanced data but tested at 2.8% prevalence, the
+optimal threshold sits at **0.70–0.95**. The original code searched only
+0.30–0.60 and could never reach it.
+
+The tuned threshold varies from 0.45 to 0.95 across folds — a real instability
+worth reporting, and the reason ROC-AUC and PR-AUC are the headline metrics.
+
+## Configuration
+
+Everything lives in [`src/config.py`](src/config.py):
+
+```python
+RANDOM_STATE   = 42     TOP_FEATURES = 30    TEST_SIZE = 0.2
+CV_FOLDS       = 5      VAL_SIZE     = 0.2   USE_SMOTE = True
+DNN_EPOCHS     = 200    DNN_BATCH_SIZE = 64  DNN_LEARNING_RATE = 0.0005
+DNN_EARLY_STOPPING_PATIENCE = 20
+ERROR_THRESHOLD = 2     MAX_ERRORS_KEEP_COLUMN = 300
+HIGH_CORRELATION_THRESHOLD = 0.90
+```
+
+## Reproducibility
+
+`set_global_seeds()` seeds Python, NumPy and TensorFlow. Two consecutive runs of
+`train.py` and of `cross_validate.py` produce identical metrics to four decimal
+places (verified). The original code seeded only `train_test_split`, so every
+run gave different numbers.
+
+Verified on Python 3.13.3, pandas 2.2.3, NumPy 2.2.6, scikit-learn 1.6.1,
+imbalanced-learn 0.14.2, TensorFlow 2.21.0 (CPU) / Keras 3.15.1.
+
+## Project structure
+
+```
+├── src/
+│   ├── config.py               # all paths and hyperparameters
+│   ├── data_preprocessing.py   # DataCleaner (fit on train, transform elsewhere)
+│   ├── feature_selection.py    # ANOVA F-test selection
+│   ├── model_training.py       # DNN, GaussianNB, SMOTE, scaling, seeding
+│   ├── model_evaluation.py     # metrics + threshold tuning
+│   ├── pipeline.py             # the shared leak-free pipeline
+│   ├── train.py                # [run 1] hold-out training
+│   ├── cross_validate.py       # [run 2] 5-fold CV — headline numbers
+│   ├── baselines.py            # [run 3] baseline comparison
+│   ├── predict.py              # [run 4] inference
+│   └── evaluate.py             # [run 5] score a labelled CSV
+├── data/
+│   ├── raw/{Train.csv, sample.csv}
+│   └── processed/              # selected_features.csv, anova_feature_scores.csv
+├── models/
+│   ├── saved/                  # current artifacts (regenerate with train.py)
+│   └── legacy/                 # original artifacts — unusable, kept for provenance
+├── results/                    # all generated metrics
+├── docs/
+│   ├── RESULTS.md              # verified numbers to quote
+│   ├── BUGS.md                 # what was broken and how it was fixed
+│   ├── ARCHITECTURE.md, QUICKSTART.md, PROJECT_SUMMARY.md
+│   └── reports/
+│       ├── EE708_report_corrected.pdf   # CURRENT report, numbers verified
+│       ├── ERRATA.md                    # every wrong figure vs. its true value
+│       ├── src/EE708_report.tex         # source of the corrected report
+│       ├── src/figures/                 # generated by make_report_figures.py
+│       ├── EE708_report.pdf             # original submission (superseded)
+│       └── Company-Bankruptcy-Prediction.pdf  # original deck (superseded)
+├── notebooks/                  # original Colab notebooks (different dataset — see BUGS.md)
+└── tests/                      # pytest suite (18 tests)
+```
+
+## Comparing against the original code
+
+The pre-rebuild `src/` lives in git history rather than being duplicated in
+the tree. To read or diff it:
+
+```bash
+git show c229bb4:src/train.py          # the version that crashed
+git diff c229bb4 HEAD -- src           # everything that changed
+```
+
+## Known limitations
+
+1. **31 test positives.** Any single hold-out metric has a wide confidence
+   interval; this is why the cross-validated mean ± std is the headline.
+2. **Threshold instability.** F1-optimal thresholds range 0.45–0.95 across
+   folds. Smoothed and bootstrap-median threshold rules were tested and gained
+   ~0.014 F1 — inside one standard deviation, so the simple rule was kept.
+3. **The ensemble's edge is narrow.** It has the best ROC-AUC and PR-AUC, but
+   Random Forest and HistGradientBoosting are within fold-level noise on F1.
+4. **No temporal split.** The dataset carries no year column, so the split is
+   random rather than forward-in-time. A real deployment would need the latter.
+5. **The `notebooks/` are legacy.** They run on a different (Polish) dataset and
+   are kept only for provenance. `src/` is the project.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

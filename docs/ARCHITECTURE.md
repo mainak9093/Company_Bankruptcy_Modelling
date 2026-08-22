@@ -1,5 +1,14 @@
 # Architecture Documentation
 
+> **SUPERSEDED — August 2025.**
+> The metrics and several structural details in this document are from the
+> original release and are **not reproducible**. `src/train.py` crashed before
+> producing any of them, and the figures trace back to an experiment on a
+> different dataset. See `docs/RESULTS.md` for verified numbers and
+> `docs/BUGS.md` for what was wrong. The design description below is still
+> broadly accurate; the numbers are not.
+
+
 ## System Design Overview
 
 The Company Bankruptcy Prediction system follows a modular, layered architecture designed for maintainability, testability, and production deployment.
